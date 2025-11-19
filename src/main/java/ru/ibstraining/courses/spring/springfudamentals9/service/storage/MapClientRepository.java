@@ -1,4 +1,4 @@
-package com.luxoft.bankapp.service.storage;
+package ru.ibstraining.courses.spring.springfudamentals9.service.storage;
 
 import com.luxoft.bankapp.model.Client;
 

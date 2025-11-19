@@ -1,11 +1,11 @@
-package com.luxoft.bankapp.exceptions;
+package ru.ibstraining.courses.spring.springfudamentals9.exceptions;
 
+import lombok.RequiredArgsConstructor;
+
+@RequiredArgsConstructor
+@SuppressWarnings("java:S1165")
 public class ActiveAccountNotSet extends RuntimeException {
-    private String clientName;
-
-    public ActiveAccountNotSet(String clientName) {
-        this.clientName = clientName;
-    }
+    String clientName;
 
     @Override
     public String getMessage() {

@@ -1,18 +1,18 @@
-package com.luxoft.bankapp.exceptions;
+package ru.ibstraining.courses.spring.springfudamentals9.exceptions;
 
+import lombok.RequiredArgsConstructor;
+
+import java.io.Serial;
+
+@RequiredArgsConstructor
 public class NotEnoughFundsException extends BankException {
 
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
 
     protected double amount;
-
-    public NotEnoughFundsException(double amount) {
-        this.amount = amount;
-    }
 
     @Override
     public String getMessage() {
         return "Not Enough Funds " + amount;
     }
-
 }

@@ -1,4 +1,4 @@
-package com.luxoft.bankapp.service;
+package ru.ibstraining.courses.spring.springfudamentals9.service;
 
 import com.luxoft.bankapp.model.AbstractAccount;
 import com.luxoft.bankapp.model.CheckingAccount;

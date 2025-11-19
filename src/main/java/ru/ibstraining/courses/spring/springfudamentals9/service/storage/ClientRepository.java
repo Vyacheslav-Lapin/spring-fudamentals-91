@@ -1,20 +1,22 @@
-package com.luxoft.bankapp.service.storage;
+package ru.ibstraining.courses.spring.springfudamentals9.service.storage;
 
-import com.luxoft.bankapp.model.Client;
+import ru.ibstraining.courses.spring.springfudamentals9.model.Client;
 
-import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Stream;
 
 public interface ClientRepository {
 
     Client add(Client client);
 
-    Client get(long id);
+    Optional<Client> get(UUID id);
 
-    Client getBy(String name);
+    Optional<Client> getBy(String name);
 
-    List<Client> getAll();
+    Stream<Client> getAll();
 
     Client update(Client o);
 
-    boolean remove(long id);
+    boolean remove(UUID id);
 }

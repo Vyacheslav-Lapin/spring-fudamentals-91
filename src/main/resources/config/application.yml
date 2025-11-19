@@ -1,1 +1,3 @@
-spring.application.name=spring-fudamentals-9
+spring:
+  application.name: spring-fudamentals-9
+  default-package: ru.ibstraining.courses.spring.springfudamentals9

@@ -1,71 +1,58 @@
-package com.luxoft.bankapp.service;
+package ru.ibstraining.courses.spring.springfudamentals9.service;
 
-import com.luxoft.bankapp.exceptions.AccountNotFoundException;
-import com.luxoft.bankapp.exceptions.ClientNotFoundException;
-import com.luxoft.bankapp.model.*;
-import com.luxoft.bankapp.service.storage.ClientRepository;
-import java.util.*;
+import lombok.RequiredArgsConstructor;
+import lombok.val;
+import ru.ibstraining.courses.spring.springfudamentals9.exceptions.ClientNotFoundException;
+import ru.ibstraining.courses.spring.springfudamentals9.model.Account;
+import ru.ibstraining.courses.spring.springfudamentals9.model.CheckingAccount;
+import ru.ibstraining.courses.spring.springfudamentals9.model.Client;
+import ru.ibstraining.courses.spring.springfudamentals9.service.storage.ClientRepository;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import static ru.ibstraining.courses.spring.springfudamentals9.model.CheckingAccount.*;
+import static ru.ibstraining.courses.spring.springfudamentals9.model.SavingAccount.*;
+
+@RequiredArgsConstructor
 public class BankingImpl implements Banking {
 
-    private ClientRepository repository;
+  ClientRepository repository;
 
     @Override
     public Client addClient(Client c) {
-
-        Client created = repository.add(c);
-        c.setRepository(repository);
-
-        return created;
+      return repository.add(c);
     }
 
     @Override
     public Client getClient(String name) {
-
-        Client foundClient = repository.getBy(name);
-
-        if (foundClient != null) {
-
-            return foundClient;
-        }
-
-        throw new ClientNotFoundException(name);
+      return repository.getBy(name)
+                       .orElseThrow(() -> new ClientNotFoundException(name));
     }
 
     @Override
-    public List<Client> getClients() {
-
+    public Stream<Client> getClients() {
         return repository.getAll();
     }
 
     @Override
     public void deleteClient(Client c) {
-
         repository.remove(c.getId());
     }
 
     @Override
-    public AbstractAccount createAccount(Client c, Class type) {
+    @SuppressWarnings("unchecked")
+    public <T extends Account> T createAccount(UUID clientId, Class<? extends T> type) {
 
-        AbstractAccount account = null;
+      val client = repository.get(clientId).orElseThrow(() -> new RuntimeException("Account not found!"))
 
-        Client client = repository.get(c.getId());
-
-        if (client != null) {
-
-            account = new SavingAccount(0);
-
-            if (type == CheckingAccount.class) {
-                account = new CheckingAccount(0);
-            }
-
-            client.addAccount(account);
-
-            repository.update(c);
-        }
-
-        return account;
+      val account = type == CheckingAccount.class ? CheckingAccount(0) : SavingAccount(0);
+      client.addAccount(account);
+      repository.update(client);
+      return (T) account;
     }
 
     @Override

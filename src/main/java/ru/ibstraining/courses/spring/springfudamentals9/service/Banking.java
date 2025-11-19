@@ -1,32 +1,35 @@
-package com.luxoft.bankapp.service;
+package ru.ibstraining.courses.spring.springfudamentals9.service;
 
-import com.luxoft.bankapp.model.AbstractAccount;
-import com.luxoft.bankapp.model.Client;
-import com.luxoft.bankapp.service.storage.ClientRepository;
+import ru.ibstraining.courses.spring.springfudamentals9.model.Account;
+import ru.ibstraining.courses.spring.springfudamentals9.model.Client;
+import ru.ibstraining.courses.spring.springfudamentals9.service.storage.ClientRepository;
 
 import java.util.List;
+import java.util.UUID;
+import java.util.stream.Stream;
 
 public interface Banking {
 
-    Client addClient(Client client);
+  Client addClient(Client client);
 
-    Client getClient(String name);
+  Client getClient(String name);
 
-    List<Client> getClients();
+  Stream<Client> getClients();
 
-    void deleteClient(Client client);
+  void deleteClient(Client client);
 
-    AbstractAccount createAccount(Client client, Class type);
+  <T extends Account> T createAccount(UUID clientId, Class<? extends T> type);
 
-    void updateAccount(Client c, AbstractAccount account);
+  void updateAccount(Client c, Account account);
 
-    AbstractAccount getAccount(Client client, Class type);
+  <T extends Account> T getAccount(Client client, Class<? extends T> type);
 
-    List<AbstractAccount> getAllAccounts();
+  <T extends Account> List<T> getAllAccounts();
 
-    List<AbstractAccount> getAllAccounts(Client client);
+  <T extends Account> List<T> getAllAccounts(Client client);
 
-    void transferMoney(Client from, Client to, double amount);
+  void transferMoney(Client from, Client to, double amount);
 
-    void setRepository(ClientRepository storage);
+  //todo 19.11.2025: разобраться - зачем это тут и прибить!
+  void setRepository(ClientRepository storage);
 }

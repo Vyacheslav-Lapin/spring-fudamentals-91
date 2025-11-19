@@ -1,245 +1,72 @@
-package com.luxoft.bankapp.model;
+package ru.ibstraining.courses.spring.springfudamentals9.model;
 
-import com.luxoft.bankapp.exceptions.AccountNumberLimitException;
-import com.luxoft.bankapp.exceptions.ActiveAccountNotSet;
-import com.luxoft.bankapp.service.storage.ClientRepository;
-import java.util.*;
-import java.util.stream.Collectors;
+import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.val;
+import org.jspecify.annotations.Nullable;
+import ru.ibstraining.courses.spring.springfudamentals9.exceptions.AccountNumberLimitException;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import static lombok.AccessLevel.*;
+
+@Data
+@RequiredArgsConstructor
+@NoArgsConstructor(access = PROTECTED)
 public class Client {
 
-    private long id;
+  public static final int ACCOUNT_LIMIT_FOR_CLIENT = 2;
+  UUID id = UUID.randomUUID();
 
-    private String name;
+  @NonNull String name;
 
-    private List<AbstractAccount> accounts = new ArrayList<>(2);
+  /**
+   * Длина не должна превышать {@code ACCOUNT_LIMIT_FOR_CLIENT}
+   */
+  @NonNull List<Account> accounts;
 
-    private AbstractAccount activeAccount;
+  Gender gender = Gender.UNDEFINED;
 
-    private Gender gender;
+  @NonNull String city;
 
-    private String city;
+  Account activeAccount;
 
-    private ClientRepository repository;
+  public boolean checkIfActiveAccountSet() {
+    return activeAccount != null;
+  }
 
-    public Client() {
+  @SuppressWarnings("unchecked")
+  public <T extends Account> Optional<T> getAccount(Class<? extends T> type) {
+    for (val account : accounts) {
+      if (account.getClass().equals(type)) {
+        return Optional.of((T) account);
+      }
     }
 
-    public Client(String name, Gender gender) {
-        this.name = name;
-        this.gender = gender;
-    }
-
-    public synchronized double getBalance() {
-
-        if (!checkIfActiveAccountSet()) {
-
-            throw new ActiveAccountNotSet(name);
-        }
-
-        return activeAccount.getBalance();
-    }
-
-    public synchronized void deposit(double amount) {
-
-        if (!checkIfActiveAccountSet()) {
-
-            throw new ActiveAccountNotSet(name);
-        }
-
-        activeAccount.deposit(amount);
-        repository.update(this);
-    }
-
-    public synchronized void withdraw(double amount) {
-
-        if (!checkIfActiveAccountSet()) {
-
-            throw new ActiveAccountNotSet(name);
-        }
-
-        activeAccount.withdraw(amount);
-        repository.update(this);
-    }
-
-    private boolean checkIfActiveAccountSet() {
-
-        return activeAccount != null;
-    }
-
-    public void removeAccount(Class type) {
-
-        accounts = accounts.stream()
-                .filter(a -> a.getClass() != type)
-                .collect(Collectors.toList());
-
-        repository.update(this);
-    }
-
-    public void setAccounts(Set<AbstractAccount> accounts) {
-
-        this.accounts.clear();
-        this.accounts.addAll(accounts);
-
-        repository.update(this);
-    }
-
-    public List<AbstractAccount> getAccounts() {
-
-        return Collections.unmodifiableList(accounts);
-    }
-
-    public AbstractAccount getAccount(Class type) {
-
-        for (AbstractAccount account : accounts) {
-
-            if (account.getClass().equals(type)) {
-                return account;
-            }
-        }
-
-        return null;
-    }
-
-    public void addAccount(AbstractAccount account) throws AccountNumberLimitException {
-
-        if (accounts.size() >= 2) {
-
-            throw new AccountNumberLimitException();
-        }
-
-        if (account != null) {
-
-            accounts.add(account);
-        }
-    }
-
-    public void setDefaultActiveAccountIfNotSet() {
-
-        if (activeAccount == null && accounts != null && !accounts.isEmpty()) {
-
-            AbstractAccount account = getAccount(CheckingAccount.class);
-
-            if (account == null) {
-
-                account = accounts.iterator().next();
-            }
-
-            activeAccount = account;
-
-            repository.update(this);
-
-            System.out.println("Default account set for " + name + ":"
-                    + activeAccount.getClass().getSimpleName());
-        }
-    }
-
-    @Override
-    public boolean equals(Object o) {
-
-        if (this == o) return true;
-
-        if (o == null || getClass() != o.getClass()) return false;
-
-        Client client = (Client) o;
-
-        return id == client.id &&
-                Objects.equals(name, client.name) &&
-                Objects.equals(city, client.city);
-    }
-
-    @Override
-    public int hashCode() {
-
-        return Objects.hash(id, name, city);
-    }
-
-    private StringBuilder getSimpleInfoBuilder() {
-        StringBuilder builder = new StringBuilder();
-
-        builder.append("\nClient: ")
-                .append(name)
-                .append("\nGender: ")
-                .append(getGender());
-
-        return builder;
-    }
-
-    @Override
-    public String toString() {
-
-        StringBuilder builder = getSimpleInfoBuilder();
-
-        builder.append("\nAccounts:");
-
-        for (AbstractAccount account : accounts) {
-            builder.append(account.toString());
-        }
-
-        builder.append("\nActive account: ");
-
-        builder.append(checkIfActiveAccountSet() ?
-                activeAccount.getClass().getSimpleName() : "not set");
-
-        return builder.toString();
-    }
-
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public AbstractAccount getActiveAccount() {
-        return activeAccount;
-    }
-
-    public void setActiveAccount(AbstractAccount activeAccount) {
-        this.activeAccount = activeAccount;
-    }
-
-    public Gender getGender() {
-        return gender;
-    }
-
-    public void setGender(Gender gender) {
-        this.gender = gender;
-    }
-
-    public String getCity() {
-        return city;
-    }
-
-    public void setCity(String city) {
-        this.city = city;
-    }
-
-    public enum Gender {
-
-        MALE("Mr"), FEMALE("Ms"), UNDEFINED("");
-
-        private String prefix;
-
-        String getSalutation() {
-            return prefix;
-        }
-
-        Gender(String prefix) {
-            this.prefix = prefix;
-        }
-    }
-
-    public void setRepository(ClientRepository repository) {
-        this.repository = repository;
-    }
+    return Optional.empty();
+  }
+
+  public void addAccount(@Nullable Account account) {
+
+    if (accounts.size() >= ACCOUNT_LIMIT_FOR_CLIENT)
+      throw new AccountNumberLimitException();
+
+    if (account != null)
+      accounts.add(account);
+  }
+
+  @Getter
+  @RequiredArgsConstructor
+  public enum Gender {
+    MALE("Mr"),
+    FEMALE("Ms"),
+    UNDEFINED("");
+
+    final String prefix;
+  }
 }

@@ -1,5 +1,4 @@
-@DefaultQualifier(NotNull.class)
+@NullMarked
 package ru.ibstraining.courses.spring.springfudamentals9;
 
-import org.checkerframework.framework.qual.DefaultQualifier;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;

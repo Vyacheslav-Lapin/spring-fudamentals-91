@@ -1,42 +1,54 @@
-package com.luxoft.bankapp.model;
+package ru.ibstraining.courses.spring.springfudamentals9.model;
 
-import com.luxoft.bankapp.exceptions.OverDraftLimitExceededException;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.NonFinal;
+import ru.ibstraining.courses.spring.springfudamentals9.exceptions.OverDraftLimitExceededException;
 
-public class CheckingAccount extends AbstractAccount {
+import java.util.UUID;
 
-    private double overdraft = 0;
+import static lombok.AccessLevel.*;
 
-    public CheckingAccount() {
+@Getter
+@Setter
+@RequiredArgsConstructor(access = PRIVATE)
+public final class CheckingAccount implements Account {
+
+  UUID id =  UUID.randomUUID();
+
+  @SuppressWarnings("NullableProblems")
+  @NonFinal @NonNull double overdraft;
+
+  @NonFinal double balance;
+
+  public static CheckingAccount CheckingAccount() {
+    return new CheckingAccount(0);
+  }
+
+  @SuppressWarnings({"java:S112", "MethodNameSameAsClassName"})
+  public static CheckingAccount CheckingAccount(double overdraft) {
+    if (overdraft < 0) {
+      throw new RuntimeException("Овердрафт должен быть больше нуля!");
     }
 
-    public CheckingAccount(double overdraft) {
+    return new CheckingAccount(overdraft);
+  }
 
-        setOverdraft(overdraft);
+  public void setOverdraft(CheckingAccount this, double amount) {
+    if (overdraft < 0) return;
+    overdraft = amount;
+  }
+
+  @Override
+  public void withdraw(double amount) {
+
+    if (getBalance() + overdraft < amount) {
+      throw new OverDraftLimitExceededException(
+          getClass().getSimpleName(), getBalance() + overdraft);
     }
 
-    public void setOverdraft(double amount) {
-
-        if (overdraft < 0) {
-            return;
-        }
-
-        overdraft = amount;
-    }
-
-    public double getOverdraft() {
-
-        return overdraft;
-    }
-
-    @Override
-    public void withdraw(double amount) throws OverDraftLimitExceededException {
-
-        if (getBalance() + overdraft < amount) {
-
-            throw new OverDraftLimitExceededException(
-                    this.getClass().getSimpleName(), getBalance() + overdraft);
-        }
-
-        setBalance(getBalance() - amount);
-    }
+    setBalance(getBalance() - amount);
+  }
 }
