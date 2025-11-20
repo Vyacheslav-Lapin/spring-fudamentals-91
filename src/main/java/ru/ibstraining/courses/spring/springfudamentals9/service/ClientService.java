@@ -4,13 +4,16 @@ import lombok.Locked;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 import org.springframework.stereotype.Service;
+import ru.ibstraining.courses.spring.springfudamentals9.dao.ClientRepository;
 import ru.ibstraining.courses.spring.springfudamentals9.exceptions.ActiveAccountNotSet;
 import ru.ibstraining.courses.spring.springfudamentals9.model.Account;
 import ru.ibstraining.courses.spring.springfudamentals9.model.CheckingAccount;
 import ru.ibstraining.courses.spring.springfudamentals9.model.Client;
 import ru.ibstraining.courses.spring.springfudamentals9.model.SavingAccount;
 
+import java.util.ArrayList;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static java.lang.IO.*;
 
@@ -26,6 +29,7 @@ public class ClientService {
     return client.getActiveAccount().getBalance();
   }
 
+  @Locked.Write
   public void deposit(Client client, double amount) {
     if (!client.checkIfActiveAccountSet()) {
       throw new ActiveAccountNotSet(client.getName());
@@ -35,6 +39,7 @@ public class ClientService {
     updateClient(client);
   }
 
+  @Locked.Write
   public void withdraw(Client client, double amount) {
     if (!client.checkIfActiveAccountSet()) {
       throw new ActiveAccountNotSet(client.getName());
@@ -47,7 +52,7 @@ public class ClientService {
   public void removeAccount(Client client, Class<? extends Account> accountType) {
     client.setAccounts(client.getAccounts().stream()
                      .filter(a -> a.getClass() != accountType)
-                     .toList());
+                     .collect(Collectors.toCollection(ArrayList::new)));
 
     updateClient(client);
   }
@@ -62,16 +67,14 @@ public class ClientService {
   public void setDefaultActiveAccountIfNotSet(Client client) {
 
     val accounts = client.getAccounts();
-    val activeAccount = client.getActiveAccount();
+    var activeAccount = client.getActiveAccount();
 
     if (activeAccount == null && !accounts.isEmpty()) {
-      Account account = client.<Account>getAccount(CheckingAccount.class)
+      activeAccount = client.<Account>getAccount(CheckingAccount.class)
           .or(() -> client.<Account>getAccount(SavingAccount.class))
           .get();
 
-      client.setActiveAccount(account);
-
-      updateClient(client);
+      updateClient(client.setActiveAccount(activeAccount));
 
       println("Default account set for %s: %s".formatted(
           client.getName(),

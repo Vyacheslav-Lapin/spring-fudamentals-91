@@ -8,6 +8,6 @@ import java.io.Serial;
 @StandardException
 public class BankException extends RuntimeException {
 
-    @Serial private static final long serialVersionUID = 1L;
+  @Serial private static final long serialVersionUID = 1L;
 
 }

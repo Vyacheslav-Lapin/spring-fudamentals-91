@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import lombok.experimental.NonFinal;
 import ru.ibstraining.courses.spring.springfudamentals9.exceptions.NotEnoughFundsException;
 
@@ -13,6 +14,7 @@ import static lombok.AccessLevel.*;
 
 @Getter
 @Setter
+@ToString
 @RequiredArgsConstructor(access = PRIVATE)
 public final class SavingAccount implements Account {
 

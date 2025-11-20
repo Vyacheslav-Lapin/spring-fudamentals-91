@@ -1,4 +1,4 @@
-package ru.ibstraining.courses.spring.springfudamentals9.service.storage;
+package ru.ibstraining.courses.spring.springfudamentals9.dao;
 
 import ru.ibstraining.courses.spring.springfudamentals9.model.Client;
 
@@ -16,7 +16,7 @@ public interface ClientRepository {
 
     Stream<Client> getAll();
 
-    Client update(Client o);
+    Client update(Client client);
 
     boolean remove(UUID id);
 }

@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import lombok.experimental.NonFinal;
 import ru.ibstraining.courses.spring.springfudamentals9.exceptions.OverDraftLimitExceededException;
 
@@ -13,6 +14,7 @@ import static lombok.AccessLevel.*;
 
 @Getter
 @Setter
+@ToString
 @RequiredArgsConstructor(access = PRIVATE)
 public final class CheckingAccount implements Account {
 
@@ -44,11 +46,15 @@ public final class CheckingAccount implements Account {
   @Override
   public void withdraw(double amount) {
 
-    if (getBalance() + overdraft < amount) {
+    if (balance + overdraft < amount) {
       throw new OverDraftLimitExceededException(
-          getClass().getSimpleName(), getBalance() + overdraft);
+          getClass().getSimpleName(), balance + overdraft);
     }
 
-    setBalance(getBalance() - amount);
+    setBalance(balance - amount);
+  }
+
+  public double getBalance() {
+    return balance - overdraft;
   }
 }

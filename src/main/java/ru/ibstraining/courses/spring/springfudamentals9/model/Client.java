@@ -9,6 +9,7 @@ import lombok.val;
 import org.jspecify.annotations.Nullable;
 import ru.ibstraining.courses.spring.springfudamentals9.exceptions.AccountNumberLimitException;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -28,11 +29,11 @@ public class Client {
   /**
    * Длина не должна превышать {@code ACCOUNT_LIMIT_FOR_CLIENT}
    */
-  @NonNull List<Account> accounts;
+  List<Account> accounts = new ArrayList<>();
 
-  Gender gender = Gender.UNDEFINED;
+  @NonNull Gender gender;
 
-  @NonNull String city;
+  @NonNull String city = "Moscow";
 
   Account activeAccount;
 
