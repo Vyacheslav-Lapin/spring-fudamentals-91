@@ -1,20 +1,28 @@
 package ru.ibstraining.courses.spring.springfudamentals9.model;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import lombok.Getter;
 import ru.ibstraining.courses.spring.springfudamentals9.exceptions.OverDraftLimitExceededException;
 
 import java.util.UUID;
 
-public sealed interface Account permits CheckingAccount, SavingAccount {
+@Entity
+@Getter
+public abstract sealed class Account permits CheckingAccount, SavingAccount {
 
-  UUID getId();
+  @Id
+  @GeneratedValue
+  UUID id;
 
-  double getBalance();
-  Account setBalance(double balance);
+  public abstract double getBalance();
+  public abstract Account setBalance(double balance);
 
-  default void deposit(double amount) {
+  public void deposit(double amount) {
     if (amount < 0) return;
     setBalance(amount);
   }
 
-  void withdraw(double amount) throws OverDraftLimitExceededException;
+  public abstract void withdraw(double amount) throws OverDraftLimitExceededException;
 }

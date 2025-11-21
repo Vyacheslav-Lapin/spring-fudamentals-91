@@ -1,26 +1,26 @@
 package ru.ibstraining.courses.spring.springfudamentals9.model;
 
-import lombok.Getter;
+import jakarta.persistence.Entity;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
-import lombok.experimental.NonFinal;
 import ru.ibstraining.courses.spring.springfudamentals9.exceptions.NotEnoughFundsException;
 
-import java.util.UUID;
+import java.util.Objects;
 
 import static lombok.AccessLevel.*;
+import static ru.ibstraining.courses.spring.springfudamentals9.commons.HibernateUtils.*;
 
-@Getter
-@Setter
-@ToString
+@SuppressWarnings({"com.intellij.jpb.LombokDataInspection", "com.haulmont.ampjpb.LombokDataInspection"})
+
+@Data
+@Entity
+@NoArgsConstructor(access = PROTECTED)
 @RequiredArgsConstructor(access = PRIVATE)
-public final class SavingAccount implements Account {
+public final class SavingAccount extends Account {
 
-  UUID id =  UUID.randomUUID();
-
-  @NonFinal @NonNull double balance;
+  @NonNull double balance;
 
   @SuppressWarnings({"java:S112", "MethodNameSameAsClassName"})
     public static SavingAccount SavingAccount(double initialBalance) {
@@ -36,4 +36,17 @@ public final class SavingAccount implements Account {
 
         setBalance(getBalance() - amount);
     }
+
+  @Override
+  public boolean equals(Object o) {
+    return this == o || o instanceof SavingAccount savingAccount
+                        && getEffectiveClass(this) == getEffectiveClass(savingAccount)
+                        && getId() != null
+                        && Objects.equals(getId(), savingAccount.getId());
+  }
+
+  @Override
+  public int hashCode() {
+    return getEffectiveClass(this).hashCode();
+  }
 }

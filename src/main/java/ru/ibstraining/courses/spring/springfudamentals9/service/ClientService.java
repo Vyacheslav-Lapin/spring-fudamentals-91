@@ -84,6 +84,6 @@ public class ClientService {
 
   @Locked.Write
   private void updateClient(Client client) {
-    repository.update(client);
+    repository.save(client);
   }
 }

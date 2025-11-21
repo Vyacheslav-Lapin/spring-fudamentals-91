@@ -1,32 +1,33 @@
 package ru.ibstraining.courses.spring.springfudamentals9.model;
 
-import lombok.Getter;
+import jakarta.persistence.Entity;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
-import lombok.experimental.NonFinal;
 import ru.ibstraining.courses.spring.springfudamentals9.exceptions.OverDraftLimitExceededException;
 
-import java.util.UUID;
+import java.util.Objects;
 
 import static lombok.AccessLevel.*;
+import static ru.ibstraining.courses.spring.springfudamentals9.commons.HibernateUtils.*;
 
-@Getter
-@Setter
-@ToString
+@SuppressWarnings({"com.haulmont.ampjpb.LombokDataInspection",
+                   "com.intellij.jpb.LombokDataInspection"})
+
+@Data
+@Entity
+@NoArgsConstructor(access = PROTECTED)
 @RequiredArgsConstructor(access = PRIVATE)
-public final class CheckingAccount implements Account {
-
-  UUID id =  UUID.randomUUID();
+public final class CheckingAccount extends Account {
 
   @SuppressWarnings("NullableProblems")
-  @NonFinal @NonNull double overdraft;
+  @NonNull double overdraft;
 
-  @NonFinal double balance;
+  double balance;
 
   public static CheckingAccount CheckingAccount() {
-    return new CheckingAccount(0);
+    return CheckingAccount(0);
   }
 
   @SuppressWarnings({"java:S112", "MethodNameSameAsClassName"})
@@ -56,5 +57,18 @@ public final class CheckingAccount implements Account {
 
   public double getBalance() {
     return balance - overdraft;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    return this == o || o instanceof CheckingAccount checkingAccount
+                        && getEffectiveClass(this) == getEffectiveClass(checkingAccount)
+                        && getId() != null
+                        && Objects.equals(getId(), checkingAccount.getId());
+  }
+
+  @Override
+  public int hashCode() {
+    return getEffectiveClass(this).hashCode();
   }
 }

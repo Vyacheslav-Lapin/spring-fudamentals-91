@@ -60,7 +60,7 @@ class BankingImpl implements Banking {
 
   @Override
   public Client addClient(Client c) {
-    return repository.add(c);
+    return repository.save(c);
   }
 
   @Override
@@ -76,29 +76,29 @@ class BankingImpl implements Banking {
 
   @Override
   public void deleteClient(Client c) {
-    repository.remove(c.getId());
+    repository.deleteById(c.getId());
   }
 
   @Override
   @SuppressWarnings("unchecked")
   public <T extends Account> T createAccount(UUID clientId, Class<? extends T> type) {
 
-    val client = repository.get(clientId)
+    val client = repository.findById(clientId)
                            .orElseThrow(() -> new RuntimeException("Account not found!"));
 
     val account = type == CheckingAccount.class ? CheckingAccount(0) : SavingAccount(0);
     client.addAccount(account);
-    repository.update(client);
+    repository.save(client);
     return (T) account;
   }
 
   @Override
   public void updateAccount(Client c, Account account) {
-    repository.get(c.getId())
+    repository.findById(c.getId())
               .ifPresent(clientToUpdate -> {
                 clientService.removeAccount(clientToUpdate, account.getClass());
                 clientToUpdate.addAccount(account);
-                repository.update(c);
+                repository.save(c);
               });
   }
 
@@ -120,9 +120,9 @@ class BankingImpl implements Banking {
 
   @Override
   public Stream<Account> getAllAccounts(UUID clientId) {
-    return repository.get(clientId)
+    return repository.findById(clientId)
                      .map(Client::getAccounts)
-                     .orElseThrow(() -> new ClientNotFoundException(repository.get(clientId)
+                     .orElseThrow(() -> new ClientNotFoundException(repository.findById(clientId)
                                                                               .map(Client::getName)
                                                                               .orElseThrow()))
                      .stream();
