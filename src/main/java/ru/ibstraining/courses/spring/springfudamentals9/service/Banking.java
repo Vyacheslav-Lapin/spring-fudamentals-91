@@ -3,7 +3,7 @@ package ru.ibstraining.courses.spring.springfudamentals9.service;
 import lombok.Locked;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import ru.ibstraining.courses.spring.springfudamentals9.aop.Loggable;
 import ru.ibstraining.courses.spring.springfudamentals9.dao.ClientRepository;
 import ru.ibstraining.courses.spring.springfudamentals9.exceptions.AccountNotFoundException;
@@ -50,7 +50,7 @@ public interface Banking {
   void transferMoney(Client from, Client to, double amount);
 }
 
-@Component
+@Service
 @Loggable(WARN)
 @RequiredArgsConstructor
 class BankingImpl implements Banking {
