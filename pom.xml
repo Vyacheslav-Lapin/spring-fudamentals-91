@@ -6,7 +6,6 @@
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
     <version>3.5.7</version>
-    <relativePath/> <!-- lookup parent from repository -->
   </parent>
 
   <groupId>ru.ibs-training.courses.spring</groupId>
@@ -23,7 +22,7 @@
     <spotbugs.version>4.8.6</spotbugs.version>
     <error_prone_annotations.version>2.36.0</error_prone_annotations.version>
 
-    <vavr.version>0.10.5</vavr.version>
+    <vavr.version>0.10.7</vavr.version>
     <assertj-vavr.version>0.4.3</assertj-vavr.version>
   </properties>
 
@@ -53,6 +52,10 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-aop</artifactId>
     </dependency>
 
     <!--region Common Annotations (JSpecifyCheckerFramework, JetBrains, SpotBugs, ErrorProne) -->
@@ -150,23 +153,40 @@
   </dependencyManagement>
 
   <build>
+    <defaultGoal>verify</defaultGoal>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>${maven-compiler-plugin.version}</version>
+          <configuration>
+            <annotationProcessorPaths>
+              <path>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-configuration-processor</artifactId>
+              </path>
+              <path>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+              </path>
+            </annotationProcessorPaths>
+          </configuration>
+        </plugin>
+        <plugin>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>${maven-surefire-plugin.version}</version>
+          <!--<configuration>-->
+            <!--https://dzone.com/articles/using-jdk21-preview-features-andor-incubator-class-->
+            <!--<argLine>-->
+              <!--- -enable-preview-->
+              <!--- -add-modules jdk.incubator.vector-->
+              <!---XX:+EnableDynamicAgentLoading-->
+            <!--</argLine>-->
+          <!--</configuration>-->
+        </plugin>
+      </plugins>
+    </pluginManagement>
     <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <configuration>
-          <annotationProcessorPaths>
-            <path>
-              <groupId>org.springframework.boot</groupId>
-              <artifactId>spring-boot-configuration-processor</artifactId>
-            </path>
-            <path>
-              <groupId>org.projectlombok</groupId>
-              <artifactId>lombok</artifactId>
-            </path>
-          </annotationProcessorPaths>
-        </configuration>
-      </plugin>
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>

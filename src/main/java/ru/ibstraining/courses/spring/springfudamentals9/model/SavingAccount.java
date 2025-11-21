@@ -31,9 +31,8 @@ public final class SavingAccount implements Account {
 
     @Override
     public void withdraw(double amount) {
-        if (getBalance() < amount) {
-            throw new NotEnoughFundsException(amount);
-        }
+        if (getBalance() < amount)
+          throw new NotEnoughFundsException(amount);
 
         setBalance(getBalance() - amount);
     }

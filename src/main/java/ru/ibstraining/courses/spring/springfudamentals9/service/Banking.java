@@ -4,6 +4,7 @@ import lombok.Locked;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 import org.springframework.stereotype.Component;
+import ru.ibstraining.courses.spring.springfudamentals9.aop.Loggable;
 import ru.ibstraining.courses.spring.springfudamentals9.dao.ClientRepository;
 import ru.ibstraining.courses.spring.springfudamentals9.exceptions.AccountNotFoundException;
 import ru.ibstraining.courses.spring.springfudamentals9.exceptions.ClientNotFoundException;
@@ -15,6 +16,7 @@ import java.util.Collection;
 import java.util.UUID;
 import java.util.stream.Stream;
 
+import static ru.ibstraining.courses.spring.springfudamentals9.aop.Loggable.LogLevel.*;
 import static ru.ibstraining.courses.spring.springfudamentals9.model.CheckingAccount.*;
 import static ru.ibstraining.courses.spring.springfudamentals9.model.SavingAccount.*;
 
@@ -49,6 +51,7 @@ public interface Banking {
 }
 
 @Component
+@Loggable(WARN)
 @RequiredArgsConstructor
 class BankingImpl implements Banking {
 
