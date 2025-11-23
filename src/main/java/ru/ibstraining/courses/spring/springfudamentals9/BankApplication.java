@@ -5,6 +5,7 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.transaction.support.TransactionTemplate;
 import ru.ibstraining.courses.spring.springfudamentals9.exceptions.ActiveAccountNotSet;
 import ru.ibstraining.courses.spring.springfudamentals9.model.CheckingAccount;
 import ru.ibstraining.courses.spring.springfudamentals9.model.Client;
@@ -35,14 +36,15 @@ public class BankApplication {
   @Bean
   ApplicationRunner runner(Banking banking,
                            ClientService clientService,
-                           BankReportService bankReportService) {
+                           BankReportService bankReportService,
+                           TransactionTemplate transactionTemplate) {
 
-    return __ -> {
+    return _ -> transactionTemplate.executeWithoutResult(_ -> {
       initialize(banking);
       workWithExistingClients(banking, clientService);
       bankingServiceDemo(banking);
       bankReportsDemo(bankReportService);
-    };
+    });
   }
 
   static void bankReportsDemo(BankReportService reportService) {

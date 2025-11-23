@@ -4,6 +4,7 @@ import lombok.Locked;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.ibstraining.courses.spring.springfudamentals9.aop.Loggable;
 import ru.ibstraining.courses.spring.springfudamentals9.dao.ClientRepository;
 import ru.ibstraining.courses.spring.springfudamentals9.exceptions.AccountNotFoundException;
@@ -30,33 +31,33 @@ public interface Banking {
 
   void deleteClient(Client client);
 
-  default <T extends Account> T createAccount(Client client, Class<? extends T> type) {
-    return createAccount(client.getId(), type);
-  }
-  <T extends Account> T createAccount(UUID clientId, Class<? extends T> type);
+  <T extends Account<T>> T createAccount(Client client, Class<? extends T> type);
 
-  void updateAccount(Client c, Account account);
+  <T extends Account<T>> T createAccount(UUID clientId, Class<? extends T> type);
 
-  <T extends Account> T getAccount(Client client, Class<? extends T> type);
+  void updateAccount(Client c, Account<?> account);
 
-  Stream<Account> getAllAccounts();
+  <T extends Account<T>> T getAccount(Client client, Class<? extends T> type);
 
-  default Stream<Account> getAllAccounts(Client client) {
+  Stream<Account<?>> getAllAccounts();
+
+  default Stream<Account<?>> getAllAccounts(Client client) {
     return getAllAccounts(client.getId());
   }
 
-  Stream<Account> getAllAccounts(UUID clientId);
+  Stream<Account<?>> getAllAccounts(UUID clientId);
 
   void transferMoney(Client from, Client to, double amount);
 }
 
 @Service
+@Transactional
 @Loggable(WARN)
 @RequiredArgsConstructor
 class BankingImpl implements Banking {
 
-  ClientRepository repository;
-  ClientService clientService;
+  private final ClientRepository repository;
+  private final ClientService clientService;
 
   @Override
   public Client addClient(Client c) {
@@ -65,13 +66,13 @@ class BankingImpl implements Banking {
 
   @Override
   public Client getClient(String name) {
-    return repository.getBy(name)
+    return repository.getByName(name)
                      .orElseThrow(() -> new ClientNotFoundException(name));
   }
 
   @Override
   public Stream<Client> getClients() {
-    return repository.getAll();
+    return repository.findAllAsStream();
   }
 
   @Override
@@ -80,8 +81,13 @@ class BankingImpl implements Banking {
   }
 
   @Override
+  public <T extends Account<T>> T createAccount(Client client, Class<? extends T> type) {
+    return createAccount(client.getId(), type);
+  }
+
+  @Override
   @SuppressWarnings("unchecked")
-  public <T extends Account> T createAccount(UUID clientId, Class<? extends T> type) {
+  public <T extends Account<T>> T createAccount(UUID clientId, Class<? extends T> type) {
 
     val client = repository.findById(clientId)
                            .orElseThrow(() -> new RuntimeException("Account not found!"));
@@ -93,18 +99,19 @@ class BankingImpl implements Banking {
   }
 
   @Override
-  public void updateAccount(Client c, Account account) {
+  @SuppressWarnings({"java:S1905", "unchecked"})
+  public void updateAccount(Client c, Account<?> account) {
     repository.findById(c.getId())
               .ifPresent(clientToUpdate -> {
-                clientService.removeAccount(clientToUpdate, account.getClass());
+                clientService.removeAccount(clientToUpdate, (Class<Account<?>>) account.getClass());
                 clientToUpdate.addAccount(account);
-                repository.save(c);
+                repository.save(clientToUpdate);
               });
   }
 
   @Override
   @SuppressWarnings("unchecked")
-  public <T extends Account> T getAccount(Client client, Class<? extends T> type) {
+  public <T extends Account<T>> T getAccount(Client client, Class<? extends T> type) {
     return (T) client.getAccounts().stream()
                      .filter(a -> a.getClass() == type)
                      .findFirst()
@@ -112,14 +119,14 @@ class BankingImpl implements Banking {
   }
 
   @Override
-  public Stream<Account> getAllAccounts() {
-    return repository.getAll()
+  public Stream<Account<?>> getAllAccounts() {
+    return repository.findAllAsStream()
                      .map(Client::getAccounts)
                      .flatMap(Collection::stream);
   }
 
   @Override
-  public Stream<Account> getAllAccounts(UUID clientId) {
+  public Stream<Account<?>> getAllAccounts(UUID clientId) {
     return repository.findById(clientId)
                      .map(Client::getAccounts)
                      .orElseThrow(() -> new ClientNotFoundException(repository.findById(clientId)

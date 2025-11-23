@@ -21,18 +21,18 @@ public abstract class MapClientRepository {//implements ClientRepository {
   }
 
 //  @Override
-  public Optional<Client> findById(UUID id) {
+  public Optional<Client> findById(@NotNull UUID id) {
     return Optional.ofNullable(data.get(id));
   }
 
 //  @Override
-  public Stream<Client> getAll() {
+  public Stream<Client> findAllAsStream() {
     return data.values().stream();
   }
 
 //  @Override
-  public Optional<Client> getBy(String name) {
-    return getAll()
+  public Optional<Client> getByName(String name) {
+    return findAllAsStream()
         .filter(client -> client.getName().equals(name))
         .findFirst();
   }

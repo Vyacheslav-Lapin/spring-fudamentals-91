@@ -19,10 +19,10 @@ import java.util.UUID;
 public class ClientDto {
   UUID id;
   @Size(min = 2, max = 50) String name;
-  List<Account> accounts;
+  List<Account<?>> accounts;
   Gender gender;
   String city;
-  Account activeAccount;
+  Account<?> activeAccount;
 
   public static ClientDto from(Client client) {
     return ClientDto.builder()

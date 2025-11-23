@@ -1,22 +1,29 @@
 package ru.ibstraining.courses.spring.springfudamentals9.model;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.Transient;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.val;
+import lombok.ToString;
 import org.jspecify.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
+import static jakarta.persistence.CascadeType.*;
+import static jakarta.persistence.FetchType.*;
 import static lombok.AccessLevel.*;
 import static ru.ibstraining.courses.spring.springfudamentals9.commons.HibernateUtils.*;
 
@@ -33,37 +40,39 @@ public class Client {
   @GeneratedValue
   UUID id;
 
+  @Column(nullable = false)
   @NonNull String name;
 
-  @OneToMany
-  List<Account> accounts;
+  @ToString.Exclude
+  @OneToMany(mappedBy = "client", cascade = ALL, fetch = LAZY)
+  List<Account<?>> accounts = new ArrayList<>();
 
+  @Enumerated(EnumType.STRING)
   @NonNull Gender gender;
 
   @NonNull String city = "Moscow";
 
-  Account activeAccount;
+  @Transient
+  Account<?> activeAccount;
 
   public boolean checkIfActiveAccountSet() {
     return activeAccount != null;
   }
 
   @SuppressWarnings("unchecked")
-  public <T extends Account> Optional<T> getAccount(Class<? extends T> type) {
-    for (val account : accounts)
-      if (account.getClass().equals(type))
-        return Optional.of((T) account);
-
-    return Optional.empty();
+  public <T extends Account<T>> Optional<T> getAccount(Class<? extends T> type) {
+    return (Optional<T>) accounts.stream()
+                                 .filter(account -> account.getClass().equals(type))
+                                 .findFirst();
   }
 
-  public void addAccount(@Nullable Account account) {
+  public void addAccount(@Nullable Account<?> account) {
 
-//    if (accounts.size() >= ACCOUNT_LIMIT_FOR_CLIENT)
-//      throw new AccountNumberLimitException();
-
-    if (account != null)
+    if (account != null) {
+      // Maintain bidirectional association for JPA
+      account.setClient(this);
       accounts.add(account);
+    }
   }
 
   @Getter

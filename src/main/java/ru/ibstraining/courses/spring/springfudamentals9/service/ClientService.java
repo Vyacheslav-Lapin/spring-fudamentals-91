@@ -4,6 +4,7 @@ import lombok.Locked;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.ibstraining.courses.spring.springfudamentals9.dao.ClientRepository;
 import ru.ibstraining.courses.spring.springfudamentals9.exceptions.ActiveAccountNotSet;
 import ru.ibstraining.courses.spring.springfudamentals9.model.Account;
@@ -12,6 +13,7 @@ import ru.ibstraining.courses.spring.springfudamentals9.model.Client;
 import ru.ibstraining.courses.spring.springfudamentals9.model.SavingAccount;
 
 import java.util.ArrayList;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -20,6 +22,7 @@ import static java.lang.IO.*;
 @Service
 @RequiredArgsConstructor
 public class ClientService {
+
   ClientRepository repository;
 
   @Locked.Read
@@ -49,7 +52,7 @@ public class ClientService {
     updateClient(client);
   }
 
-  public void removeAccount(Client client, Class<? extends Account> accountType) {
+  public void removeAccount(Client client, Class<? extends Account<?>> accountType) {
     client.setAccounts(client.getAccounts().stream()
                      .filter(a -> a.getClass() != accountType)
                      .collect(Collectors.toCollection(ArrayList::new)));
@@ -57,29 +60,34 @@ public class ClientService {
     updateClient(client);
   }
 
-  public void setAccounts(Client client, Set<? extends Account> accounts) {
+  @SuppressWarnings("unused")
+  public void setAccounts(Client client, Set<? extends Account<?>> accounts) {
     client.getAccounts().clear();
     client.getAccounts().addAll(accounts);
     updateClient(client);
   }
 
-  @SuppressWarnings("OptionalGetWithoutIsPresent")
+  @Transactional
   public void setDefaultActiveAccountIfNotSet(Client client) {
 
-    val accounts = client.getAccounts();
-    var activeAccount = client.getActiveAccount();
+    // Загружаем управляемую сущность (managed entity), чтобы инициализировать ленивую коллекцию accounts
+    val managedClient = repository.findById(client.getId()).orElseThrow();
+//    val accounts = managedClient.getAccounts(); // initialize lazy collection
+    val activeAccount =
+        Optional.<Account<?>>ofNullable(client.getActiveAccount())
+                .or(() -> managedClient.getAccount(CheckingAccount.class))
+                .or(() -> managedClient.getAccount(SavingAccount.class))
+                .orElseThrow(() -> new ActiveAccountNotSet(client.getName()));
 
-    if (activeAccount == null && !accounts.isEmpty()) {
-      activeAccount = client.<Account>getAccount(CheckingAccount.class)
-          .or(() -> client.<Account>getAccount(SavingAccount.class))
-          .get();
+    // set on both the managed entity and the provided instance
+    managedClient.setActiveAccount(activeAccount);
+    client.setActiveAccount(activeAccount);
 
-      updateClient(client.setActiveAccount(activeAccount));
+    updateClient(managedClient);
 
-      println("Default account set for %s: %s".formatted(
-          client.getName(),
-          activeAccount.getClass().getSimpleName()));
-    }
+    println("Default account set for %s: %s".formatted(
+        client.getName(),
+        activeAccount.getClass().getSimpleName()));
   }
 
   @Locked.Write

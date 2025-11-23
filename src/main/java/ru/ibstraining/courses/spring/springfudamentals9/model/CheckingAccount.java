@@ -1,5 +1,6 @@
 package ru.ibstraining.courses.spring.springfudamentals9.model;
 
+import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -17,44 +18,42 @@ import static ru.ibstraining.courses.spring.springfudamentals9.commons.Hibernate
 
 @Data
 @Entity
+@DiscriminatorValue("CHECKING")
 @NoArgsConstructor(access = PROTECTED)
 @RequiredArgsConstructor(access = PRIVATE)
-public final class CheckingAccount extends Account {
+public class CheckingAccount extends Account<CheckingAccount> {
 
   @SuppressWarnings("NullableProblems")
   @NonNull double overdraft;
 
-  double balance;
-
-  public static CheckingAccount CheckingAccount() {
-    return CheckingAccount(0);
-  }
-
-  @SuppressWarnings({"java:S112", "MethodNameSameAsClassName"})
+  @SuppressWarnings({"java:S112", "java:S100", "java:S1223", "MethodNameSameAsClassName"})
   public static CheckingAccount CheckingAccount(double overdraft) {
-    if (overdraft < 0) {
+    if (overdraft < 0)
       throw new RuntimeException("Овердрафт должен быть больше нуля!");
-    }
 
     return new CheckingAccount(overdraft);
   }
 
-  public void setOverdraft(CheckingAccount this, double amount) {
-    if (overdraft < 0) return;
+  @SuppressWarnings("java:S112")
+  public void setOverdraft(double amount) {
+    if (overdraft < 0)
+      throw new RuntimeException("Овердрафт должен быть больше нуля!");
+
     overdraft = amount;
   }
 
   @Override
   public void withdraw(double amount) {
 
-    if (balance + overdraft < amount) {
+    if (balance + overdraft < amount)
       throw new OverDraftLimitExceededException(
-          getClass().getSimpleName(), balance + overdraft);
-    }
+          getClass().getSimpleName(),
+          balance + overdraft);
 
     setBalance(balance - amount);
   }
 
+  @Override
   public double getBalance() {
     return balance - overdraft;
   }
@@ -63,8 +62,8 @@ public final class CheckingAccount extends Account {
   public boolean equals(Object o) {
     return this == o || o instanceof CheckingAccount checkingAccount
                         && getEffectiveClass(this) == getEffectiveClass(checkingAccount)
-                        && getId() != null
-                        && Objects.equals(getId(), checkingAccount.getId());
+                        && id != null
+                        && Objects.equals(id, checkingAccount.id);
   }
 
   @Override

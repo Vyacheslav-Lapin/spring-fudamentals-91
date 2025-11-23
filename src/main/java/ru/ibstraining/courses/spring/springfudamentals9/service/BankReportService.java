@@ -29,25 +29,25 @@ class BankReportServiceImpl implements BankReportService {
 
   @Override
   public long getNumberOfBankClients() {
-    return repository.getAll().count();
+    return repository.findAll().size();
   }
 
   @Override
   public long getAccountsNumber() {
-    return repository.getAll()
+    return repository.findAll().stream()
                      .mapToLong(c -> c.getAccounts().size())
                      .sum();
   }
 
   @Override
   public Stream<Client> getClientsSorted() {
-    return repository.getAll()
+    return repository.findAll().stream()
                      .sorted(Comparator.comparing(Client::getName));
   }
 
   @Override
   public double getBankCreditSum() {
-    return repository.getAll()
+    return repository.findAll().stream()
                      .flatMap(client -> client.getAccounts().stream())
                      .filter(account -> account.getClass() == CheckingAccount.class)
                      .mapToDouble(Account::getBalance)
@@ -57,7 +57,7 @@ class BankReportServiceImpl implements BankReportService {
 
   @Override
   public Map<String, List<Client>> getClientsByCity() {
-    return repository.getAll()
+    return repository.findAll().stream()
                      .collect(Collectors.groupingBy(Client::getCity));
   }
 }
